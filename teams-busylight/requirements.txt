@@ -1,0 +1,2 @@
+busylight-for-humans==0.33.3
+sdnotify==0.3.2

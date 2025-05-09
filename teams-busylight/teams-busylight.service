@@ -1,0 +1,14 @@
+[Unit]
+Description=Teams Busylight Service
+StartLimitBurst=5
+StartLimitIntervalSec=10
+
+[Service]
+Restart=on-failure
+Type=notify
+NotifyAccess=all
+Environment=PYTHONUNBUFFERED=1
+ExecStart=[path to]/teams-busylight.py
+
+[Install]
+WantedBy=default.target
