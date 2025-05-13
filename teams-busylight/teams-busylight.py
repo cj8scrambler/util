@@ -41,6 +41,11 @@ class TeamsBusylight:
     # "Away" then update Team's status to "Available"
     teams_status = self.teams.get_status()
     activity_status = self.activity.get_status()
+
+    if teams_status is None:
+      logging.error(f"Error: Unable to retrieve teams status")
+      return
+
     if (activity_status == "Available" and teams_status == "Away"):
       logging.info(f"Update Teams status from {teams_status} to {activity_status}")
       self.teams.set_status(activity_status)

@@ -37,6 +37,7 @@ class Teams:
         else:
           print(f"Warning command [{command}] returned result code: {result.returncode}")
           print(result.stderr)
+          return None
       return result.stdout
     except FileNotFoundError as e:
       print("Error: mgc not found.  Install instructions https://learn.microsoft.com/en-us/graph/cli/installation?tabs=linux")
@@ -47,9 +48,11 @@ class Teams:
 
   def get_status(self):
     response = self._mgc_command(("mgc", "users", "presence", "get", "--user-id", "me"))
-    presence = json.loads(response)
-    logging.debug(f"Teams status is: availability: {presence['availability']}  activity: {presence['activity']}")
-    return presence['availability']
+    if response:
+      presence = json.loads(response)
+      logging.debug(f"Teams status is: availability: {presence['availability']}  activity: {presence['activity']}")
+      return presence['availability']
+    return None
 
   def set_status(self, status):
     validated = False;
