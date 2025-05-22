@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# pre-push hook to:
+#   Get user confirmation when pushing a protected branch
+#   run `git lfs pre-push` when lfs is enabled
+
+# Regular expression to match protected branches
+PROTECTED_REF_RE="refs/heads/release/|refs/heads/develop/|refs/heads/main"
+
+# Check for push to protected branch
+while read LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA
+do
+    # stdin is consumed here, but needs to be passed along later
+    STDIN+="${LOCAL_REF} ${LOCAL_SHA} ${REMOTE_REF} ${REMOTE_SHA}"$'\n'
+    if [[ "$REMOTE_REF" =~ ${PROTECTED_REF_RE} ]]
+    then
+        # Write and read directly to TTY because stdio is often hidden
+        # by Python scripts using git package
+        echo -n "Pushing to ${REMOTE_REF}, are you sure? [y/N]: " > /dev/tty
+        read CONFIRMATION < /dev/tty
+        if [[ "${CONFIRMATION}" != "y" ]]
+        then
+            echo "Push aborted." > /dev/tty
+            exit 1
+        fi
+    fi
+done
+
+# Only run the git-lfs pre-push when git-lfs is actually used in this repo
+if git grep -q filter=lfs -- .gitattributes '**/.gitattributes' # https://stackoverflow.com/a/76197696
+then
+    command -v git-lfs >/dev/null 2>&1 || { echo >&2 "\nThis repository is configured for Git LFS but 'git-lfs' was not found on your path.\n"; exit 2; }
+    # Propagate stdin that was consumed above
+    echo ${STDIN} | git lfs pre-push "$@"
+fi

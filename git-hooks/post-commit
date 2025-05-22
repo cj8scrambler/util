@@ -1,0 +1,7 @@
+#!/bin/sh
+# Only run the git-lfs post-commit when git-lfs is actually used in this repo
+if git grep -q filter=lfs -- .gitattributes '**/.gitattributes' # https://stackoverflow.com/a/76197696
+then
+    command -v git-lfs >/dev/null 2>&1 || { echo >&2 "\nThis repository is configured for Git LFS but 'git-lfs' was not found on your path.\n"; exit 2; }
+    git lfs post-commit "$@"
+fi
